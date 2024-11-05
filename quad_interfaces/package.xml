@@ -3,14 +3,17 @@
 <package format="3">
   <name>quad_interfaces</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="agwananyaa2001@gmail.com">aawizard</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Interface for quadrotor msg and srv</description>
+  <maintainer email="ananyaagarwal2024@u.northwestern.edu">Ananya Agarwal</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>
