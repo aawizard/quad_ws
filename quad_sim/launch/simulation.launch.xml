@@ -1,0 +1,7 @@
+<launch>
+    <arg name="rviz_config" default="first.rviz" description ="path of the rviz file to launch" />
+
+    <node pkg="rviz2" exec="rviz2" args=" $(find-pkg-share turtle_brick)/$(var rviz_config)" name= 'rviz2'/>
+    <node pkg="quad_sim" exec="sim"/>
+     
+   </launch>

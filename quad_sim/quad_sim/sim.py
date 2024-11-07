@@ -20,7 +20,7 @@ class QuadSim(Node):
         self.subscription  # prevent unused variable warning
         self.qd = quadrotor(Ts = 1.0/16.0, USE_PWM = 1, USE_PID = 0)
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.publisher_ = self.create_publisher(PoseStamped, '/quad_pose', 10)
+        self.publisher_ = self.create_publisher(PoseStamped, '/sim/quad_pose', 10)
         self.ctrl = QuadCmd()
         self.qd.des_xyz(1.0, 2.0, 3.0)
         self.qd.state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

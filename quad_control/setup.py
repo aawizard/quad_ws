@@ -13,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('lib', package_name, 'controllers'), glob('controllers/*')),
+        ('share/' + package_name, ['launch/verify_sim.launch.xml']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

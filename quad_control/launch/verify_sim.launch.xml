@@ -1,0 +1,11 @@
+<launch>
+
+    <node pkg="joy" exec="joy_node" name="joy_node" output="screen">
+     </node>
+   
+     <node exec="joystick" pkg="quad_control" output="screen">
+        <param name="use_sim" value="True"/>
+        <param name="use_drone" value = "True"/>
+     </node> 
+     <include file="$(find-pkg-share quad_sim)/simulation.launch.xml"/>
+   </launch>

@@ -17,7 +17,8 @@
   <depend>sensor_msgs</depend>
   <depend>visualization_msgs</depend>
   <exec_depend>quad_interfaces</exec_depend>
-
+  <exec_depend>quad_sim</exec_depend>
+  <exec_depend>quad_listener</exec_depend>
   <export>
     <build_type>ament_python</build_type>
   </export>
