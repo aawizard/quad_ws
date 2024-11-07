@@ -17,7 +17,7 @@ NO_OF_CYCLES_AVERAGE_GUI_TIME = 10
 
 SERIAL_PORT = "/dev/serial0"
 HOST = '192.168.18.103'  # Server IP
-PORT = 65433 
+PORT = 65432 
 # def run_curses(external_function):
 #     result=1
 

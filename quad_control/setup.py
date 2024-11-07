@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'controller = quad_control.controller_node:main',
             'joystick = quad_control.joystick:main',
+            'record = quad_control.record:main',
         ],
     },
 )

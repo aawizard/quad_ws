@@ -23,7 +23,7 @@ class UdpListener(Node):
 
         # Load the pose offsets from YAML
         package_share_directory = get_package_share_directory('quad_listener')
-        yaml_file_path = os.path.join(package_share_directory, 'config', 'pose_offsets.yaml')
+        yaml_file_path = os.path.join(package_share_directory, 'pose_offsets.yaml')
         self.pose_offsets = self.load_yaml(yaml_file_path)
 
         # Get the bird's name and corresponding offset

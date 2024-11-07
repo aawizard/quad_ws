@@ -25,7 +25,7 @@ from math import *
 class quadrotor:
     def __init__(self, Ts = 1.0/50.0, USE_PWM=0, USE_PID=0):
         self.Ts = Ts
-        self.max_thrust = 3.859
+        self.max_thrust = 3.059
         self.g = 9.81
         self.m = 0.111
         self.l = 0.44

@@ -11,6 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name, ['config/pose_offsets.yaml']),
+        ('share/' + package_name, ['launch/listener.launch.xml']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,7 +22,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "quad_listener = quad_listener.quad_listener:main",
+            "quad_listener = quad_listener.listener_node:main",
         ],
     },
 )

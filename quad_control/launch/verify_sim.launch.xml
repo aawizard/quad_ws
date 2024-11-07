@@ -8,4 +8,5 @@
         <param name="use_drone" value = "True"/>
      </node> 
      <include file="$(find-pkg-share quad_sim)/simulation.launch.xml"/>
+     <include file="$(find-pkg-share quad_listener)/listener.launch.xml"/>
    </launch>

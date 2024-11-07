@@ -1,14 +1,13 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from std_msgs.msg import String
 from quad_interfaces.msg import QuadCmd
 import socket
 import time
 import json 
 
 HOST = '192.168.18.103'  # Server IP (localhost for testing on local machine)
-PORT = 65433        # Port to listen on
+PORT = 65432        # Port to listen on
 
 class JoyNode(Node):
 
