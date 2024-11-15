@@ -1,99 +1,76 @@
 import rclpy
 from rclpy.node import Node
 from quad_interfaces.msg import QuadCmd
-from controllers.pid_altitude import PID_alttitude
+from controllers.pid_altitude import PID_alttitude, PID_roll_pitch
 from geometry_msgs.msg import PoseStamped
-import socket
-import time
-import json 
-
-
-HOST = '192.168.18.103'  # Server IP (localhost for testing on local machine)
-PORT = 65433        # Port to listen on
+import numpy as np
 
 class Controller(Node):
 
     def __init__(self):
         super().__init__('controller')
-        self.declare_parameter("use_drone", False)
+        self.declare_parameter("use_drone", True)
         self.declare_parameter("use_sim", False)
         self.use_drone = self.get_parameter("use_drone").value
         self.use_sim = self.get_parameter("use_sim").value
         
         self.publisher_ = self.create_publisher(QuadCmd, '/quad_ctrl', 10)
-        self.subscription = self.create_subscription(PoseStamped, '/quad_pose', self.listener_callback, 10)
         timer_period = 0.01  # seconds
+        if self.use_sim:
+            self.subscription = self.create_subscription(PoseStamped, '/sim/quad_pose', self.listener_callback, 10)
+            self.pid_altitude = PID_alttitude(kp=1.7, ki=0.31, kd=0.2, dt=timer_period)
+            self.pid_x = PID_roll_pitch(kp=0.3, ki=0.01, kd=0.4, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.3, ki=0.0, kd=0.4, dt=timer_period)
+        else:
+            self.subscription = self.create_subscription(PoseStamped, '/quad_pose', self.listener_callback, 10)
+            self.pid_altitude = PID_alttitude(kp=1.2, ki=0.05, kd=1.2, dt=timer_period)
+            self.pid_x = PID_roll_pitch(kp=0.3, ki=0.00, kd=0.2, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.3, ki=0.0, kd=0.2, dt=timer_period)
+            
+        self.pid_yaw = PID_roll_pitch(kp=0.3, ki=0.01, kd=0.4, dt=timer_period)
+        
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
         
-        self.pid_altitude = PID_alttitude(kp=0.7, ki=0.0, kd=0.1, dt=timer_period)
-        self.desired_altitude = 1.0
-        self.curr_altitude = 0.0
+        
+        self.desired_position = np.array([0.2, 0.3, 0.3])
+        self.curr_position =  np.array([0.0, 0.0, 0.0])
         self.quad_cmd = QuadCmd()
-        self.aux1 = 1000
-        self.aux2 = 1000
-        self.mode = 0
+        self.quad_cmd.roll = 1500
+        self.quad_cmd.pitch = 1500
+        self.quad_cmd.yaw = 1500
+        self.quad_cmd.throttle = 900
+        self.quad_cmd.armed = False
         self.flag = 0
         self.arm = False
-        self.drone_cmds = [1500, 1500, 1000, 1500, self.aux1, self.aux2, self.flag]
         
-        if self.use_drone:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                self.sock.bind((HOST, PORT))
-                self.sock.listen()
-                self.get_logger().info(f"Server listening on {HOST}:{PORT}...")
-                self.conn, self.addr = self.sock.accept()
-                self.get_logger().info(f"Connected by {self.addr}")
-            except socket.error as e:
-                self.get_logger().error(f"Failed to start TCP server: {e}")
-        
-    def set_desired_altitude(self, altitude):
-        self.desired_altitude = altitude
+    def set_desired_altitude(self, position):
+        self.desired_position = position
         
     def listener_callback(self, msg):
-        self.curr_altitude = msg.pose.position.z
-                
-    def send_cmd_drone(self):
-        try:
-            # Simulate control loop timing
-            self.flag += 1  # Increment the flag to simulate changes over time
-            self.drone_cmds[-1] = self.flag  # Update the flag in the command list
-
-            # Send the command array as a JSON string
-            data = json.dumps(self.drone_cmds) + '\n'
-            self.conn.sendall(data.encode('utf-8'))
-            
-        except socket.error as e:
-            self.get_logger().error(f"Failed to send data, error: {e}")
+        self.curr_position[0] = msg.pose.position.x
+        self.curr_position[1] = msg.pose.position.y
+        self.curr_position[2] = msg.pose.position.z
         
-        
-    
 
     def timer_callback(self):
-        error = self.desired_altitude - self.curr_altitude
-        thrust = self.pid_altitude.step(error)
-        if self.use_sim:
-            self.quad_cmd.throttle = thrust
+        if self.flag > 500 and self.flag < 700:
             self.quad_cmd.armed = True
-            self.publisher_.publish(self.quad_cmd)
+        elif self.flag > 700:
         
-        if self.use_drone:
+        
+            error = self.desired_position - self.curr_position
+            thrust = self.pid_altitude.step(error[2])
+            roll = self.pid_x.step(-1 * error[1])
+            pitch = self.pid_y.step(error[0])
+            self.get_logger().info(f"error z: {error[2]}")
             
-            if self.flag > 500 and self.flag<700:
-                print("arming")
-                self.aux1 = 1800
-                self.drone_cmds = [1500, 1500, 1000, 1500, 1800, self.aux2, self.flag]
-                self.send_cmd_drone()
-            if self.flag > 700:
-                self.aux1 = 1800
-                self.drone_cmds = [1500, 1500, thrust, 1500, self.aux1, self.aux2, self.flag]
-                self.send_cmd_drone()
-            
-            else:
-              self.flag += 1
-              print(self.flag)
-              self.send_cmd_drone()
+            self.quad_cmd.throttle = thrust
+            self.quad_cmd.roll = roll   
+            self.quad_cmd.pitch = pitch
+            self.quad_cmd.armed = True
+        self.publisher_.publish(self.quad_cmd)
+        self.flag+=1
 
 def main(args=None):
     rclpy.init(args=args)

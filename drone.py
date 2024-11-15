@@ -17,7 +17,7 @@ NO_OF_CYCLES_AVERAGE_GUI_TIME = 10
 
 SERIAL_PORT = "/dev/serial0"
 HOST = '192.168.18.103'  # Server IP
-PORT = 65432 
+PORT = 65431
 # def run_curses(external_function):
 #     result=1
 
@@ -145,7 +145,7 @@ def server_controller():
                             try:
                                 # Parse each line as JSON
                                 drone_cmds = json.loads(line)  
-                                print(drone_cmds)
+                                print(drone_cmds, "no error")
                                 # screen.addstr(1, 0, f"Received commands: {drone_cmds}")
                                 # screen.clrtoeol()
                             except json.JSONDecodeError as e:

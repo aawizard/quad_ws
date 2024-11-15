@@ -21,12 +21,14 @@
 import time
 import numpy as np
 from math import *
+import random
+
 
 class quadrotor:
     def __init__(self, Ts = 1.0/50.0, USE_PWM=0, USE_PID=0):
         self.Ts = Ts
-        self.max_thrust = 3.059
-        self.g = 9.81
+        self.max_thrust = 3.059 # in N (Kgms-2)
+        self.g = 9.81  
         self.m = 0.111
         self.l = 0.44
         # PID gains for roll and pitch
@@ -180,15 +182,20 @@ class quadrotor:
             dt = 0.01  # For example, 10 ms
             
             # Update angular rates based on PID output
-            p = roll_control_rad 
+            
+            p = roll_control_rad
             q = pitch_control_rad
             r += 0  # Assuming no yaw input for now
+            if random.uniform(0, 1) < 0.4:
+                p += random.uniform(-0.3, 0.3)
+                q += random.uniform(-0.3, 0.3)
             
             # Update angles and other state variables
             phi += p * dt
             theta += q * dt
             psi += r * dt
-            z_dot += (thrust_gf[2] - self.m *self.g)  * dt  # Net force in z direction
+            # print(thrust_gf)
+            z_dot += (thrust_gf[2]/self.m - self.g)  * dt  # Net force in z direction
             z += z_dot * dt  # Update z position
 
             # Check if z < 0
@@ -201,7 +208,7 @@ class quadrotor:
             else:
                 x_dot -= thrust_gf[0] * dt
                 y_dot -= thrust_gf[1] * dt
-                x += x_dot * dt
+                x += x_dot * dt 
                 y += y_dot * dt
             # Update the state
             self.state = [phi, theta, psi, p, q, r, x_dot, y_dot, z_dot, x, y, z]

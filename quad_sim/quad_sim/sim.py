@@ -7,6 +7,8 @@ import math
 from geometry_msgs.msg import PoseStamped
 from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
+from visualization_msgs.msg import Marker, MarkerArray
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
 class QuadSim(Node):
 
@@ -25,7 +27,87 @@ class QuadSim(Node):
         self.qd.des_xyz(1.0, 2.0, 3.0)
         self.qd.state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.pose = PoseStamped()
+        markerQoS = QoSProfile(
+            depth=10, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        self.pub_marker = self.create_publisher(
+            MarkerArray, "visualization_marker_array", markerQoS
+        )
         self.tf_broadcaster = TransformBroadcaster(self)
+        
+        self.make_drone_makerer()
+    
+    def make_drone_part(self, id, scale, pose, type, color):
+        """
+        Create the wall marker taking scale and pose.
+
+        Args:
+        ----
+            id (float): Marker id
+            scale (list): x,y,z scale of the marker
+            pose (list): x,y,z pose of the marker
+
+        Returns
+        -------
+            Marker
+
+        """
+        m = Marker()
+        m.header.frame_id = "base_link"
+        m.header.stamp = self.get_clock().now().to_msg()
+        m.id = id
+        m.type = type
+        m.action = Marker.ADD
+        m.scale.x = scale[0]
+        m.scale.y = scale[1]
+        m.scale.z = scale[2]
+        m.pose.position.x = pose[0]
+        m.pose.position.y = pose[1]
+        m.pose.position.z = pose[2]
+        m.pose.orientation.x = pose[3]
+        m.pose.orientation.y = pose[4]
+        m.pose.orientation.z = pose[5]
+        m.pose.orientation.w = pose[6]
+        m.color.r = color[0]
+        m.color.g = color[1]
+        m.color.b = color[2]
+        m.color.a = color[3]
+        m.frame_locked = True
+        return m
+    
+    def make_drone_makerer(self):
+        self.drone = MarkerArray()
+        self.drone.markers.append(
+            self.make_drone_part(
+                1, [0.4, 0.02, 0.02] ,[0.0, 0.0, 0.0, 0.0, 0.0, 0.3826834324, 0.9238795325 ], Marker.CUBE, [1.0, 1.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                2, [0.4, 0.02, 0.02] ,[0.0, 0.0, 0.0, 0.0, 0.0, -0.3826834324, 0.9238795325 ], Marker.CUBE, [1.0, 1.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                3, [0.1, 0.06, 0.02] ,[0.15, 0.15, 0.0, 0.0, 0.0, 0.0, 1.0 ], Marker.CYLINDER, [1.0, 0.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                4, [0.1, 0.06, 0.02] ,[0.15, -0.15, 0.0, 0.0, 0.0, 0.0, 1.0 ], Marker.CYLINDER, [1.0, 0.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                5, [0.1, 0.06, 0.02] ,[-0.15, 0.15, 0.0, 0.0, 0.0, 0.0, 1.0 ], Marker.CYLINDER, [0.0, 0.0, 1.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                6, [0.1, 0.06, 0.02] ,[-0.15, -0.15, 0.0, 0.0, 0.0, 0.0, 1.0 ], Marker.CYLINDER, [0.0, 0.0, 1.0, 1.0]
+            )
+        )
+    
+        self.pub_marker.publish(self.drone)
 
     def tf_pose(self):
         t = TransformStamped()
@@ -65,7 +147,7 @@ class QuadSim(Node):
         
     def timer_callback(self):
         if self.ctrl.armed:
-            self.get_logger().info("Arming")
+            # self.get_logger().info("Arming")
             self.qd.input_vector[0] = self.ctrl.throttle
             self.qd.input_vector[1] = self.ctrl.roll 
             self.qd.input_vector[2] = self.ctrl.pitch

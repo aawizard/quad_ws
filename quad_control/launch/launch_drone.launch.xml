@@ -1,0 +1,13 @@
+<launch>
+   
+
+    <node pkg="joy" exec="joy_node" name="joy_node" output="screen">
+     </node>
+   
+     <node exec="joystick" pkg="quad_control" output="screen">
+
+     </node> 
+     <node pkg="quad_control" exec="drone_control"></node>
+     <!-- <include file="$(find-pkg-share quad_sim)/simulation.launch.xml"/> -->
+     <!-- <include file="$(find-pkg-share quad_listener)/listener.launch.xml"/> -->
+   </launch>
