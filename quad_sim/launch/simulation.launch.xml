@@ -1,7 +1,24 @@
 <launch>
-    <arg name="rviz_config" default="first.rviz" description ="path of the rviz file to launch" />
+    <!-- RViz configuration file argument -->
+    <arg name="rviz_config" default="first.rviz" description="Path of the RViz file to launch" />
 
-    <node pkg="rviz2" exec="rviz2" args=" $(find-pkg-share quad_sim)/$(var rviz_config)" name= 'rviz2'/>
-    <node pkg="quad_sim" exec="sim"/>
-     
-   </launch>
+    <!-- Position and frame_id arguments -->
+    <arg name="x" default="0.5" description="Desired x position" />
+    <arg name="y" default="0.5" description="Desired y position" />
+    <arg name="z" default="0.3" description="Desired z position" />
+    <arg name="namespace" default="robot1" description="Namespace for the robot" />
+
+    <!-- Launch RViz node -->
+    <node pkg="rviz2" exec="rviz2" args="$(find-pkg-share quad_sim)/$(var rviz_config)" name="rviz2" />
+
+    <!-- Launch simulation node in a namespace -->
+    <group ns="$(arg namespace)">
+        <node pkg="quad_sim" exec="sim" output="screen">
+            <!-- Pass the desired x, y, z, and frame_id as parameters -->
+            <param name="desired_x" value="$(var x)" />
+            <param name="desired_y" value="$(var y)" />
+            <param name="desired_z" value="$(var z)" />
+            <param name="frame_id" value="$(var namespace)" />
+        </node>
+    </group>
+</launch>

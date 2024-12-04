@@ -106,7 +106,7 @@ import rosbag2_py
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_rosbag_data(bag_file_path):
+def plot_rosbag_data(bag_file_path, axis):
     # Initialize ROS and create a node
     rclpy.init()
 
@@ -143,12 +143,22 @@ def plot_rosbag_data(bag_file_path):
         if topic == "/quad_ctrl":
             msg = deserialize_message(data, quad_ctrl_type)
             times_quad_ctrl.append(time_in_seconds)
-            throttle_values_quad_ctrl.append(msg.throttle)
+            if axis =="z":
+                throttle_values_quad_ctrl.append(msg.throttle)
+            elif axis =="y":
+                throttle_values_quad_ctrl.append(msg.roll)
+            elif axis =="x":
+                throttle_values_quad_ctrl.append(msg.pitch)
         
         elif topic == "/quad_pose":
             msg = deserialize_message(data, quad_pose_type)
             times_quad_pose.append(time_in_seconds)
-            z_values_quad_pose.append(msg.pose.position.z)
+            if axis =="z":
+                z_values_quad_pose.append(msg.pose.position.z)
+            elif axis =="y":
+                z_values_quad_pose.append(msg.pose.position.y)
+            elif axis =="x":
+                z_values_quad_pose.append(msg.pose.position.x)
 
     # Determine common time range for x-axis limits
     start_time = max(min(times_quad_pose), min(times_quad_ctrl))
@@ -159,27 +169,64 @@ def plot_rosbag_data(bag_file_path):
 
     # Top plot: Quad Pose Z Position vs Time
     plt.subplot(2, 1, 1)
-    plt.plot(times_quad_pose, z_values_quad_pose, label='Quad Pose Y', color='blue')
+    plt.plot(times_quad_pose, z_values_quad_pose, label=f'Quad Pose {axis}', color='blue')
     plt.xlim(start_time, end_time)
     plt.xlabel("Time (s)")
-    plt.ylabel("Y Position (m)")
-    plt.title("Quad Pose Y Position vs Time")
+    plt.ylabel(f"{axis} Position (m)")
+    plt.title(f"Quad Pose {axis} Position vs Time")
     plt.grid(True)
 
     # Bottom plot: QuadCtrl Throttle vs Time
     plt.subplot(2, 1, 2)
-    plt.plot(times_quad_ctrl, throttle_values_quad_ctrl, label='QuadCtrl Roll', color='red')
+    if axis =="z":
+        plt.plot(times_quad_ctrl, throttle_values_quad_ctrl, label='QuadCtrl Throttle', color='red')
+        plt.ylabel("Throttle")
+        plt.title("QuadCtrl Throttle vs Time")
+    elif axis =="y":
+        plt.plot(times_quad_ctrl, throttle_values_quad_ctrl, label='QuadCtrl Roll', color='red')
+        plt.ylabel("Roll")
+        plt.title("QuadCtrl Roll vs Time")
+    elif axis =="x":
+        plt.plot(times_quad_ctrl, throttle_values_quad_ctrl, label='QuadCtrl Pitch', color='red')
+        plt.ylabel("Pitch")
+        plt.title("QuadCtrl Pitch vs Time")
     plt.xlim(start_time, end_time)
     plt.xlabel("Time (s)")
-    plt.ylabel("Roll")
-    plt.title("QuadCtrl Roll vs Time")
     plt.grid(True)
+    # plt.title(f"{bag_file_path} {axis}")
 
     plt.tight_layout()
+    plt.savefig(f"{bag_file_path}/{axis}.png")
     plt.show()
+    
 
     # Shutdown ROS
     rclpy.shutdown()
 
 # Example usage
-plot_rosbag_data("rosbag/test5")
+# plot_rosbag_data("rosbag/test1", "x")
+# plot_rosbag_data("rosbag/test1", "y")
+# plot_rosbag_data("rosbag/test1", "z")
+
+# plot_rosbag_data("rosbag/test2", "x")
+# plot_rosbag_data("rosbag/test2", "y")
+# plot_rosbag_data("rosbag/test2", "z")
+
+
+# plot_rosbag_data("rosbag/test3", "x")
+# plot_rosbag_data("rosbag/test3", "y")
+# plot_rosbag_data("rosbag/test3", "z")
+
+# plot_rosbag_data("rosbag/test4", "x")
+# plot_rosbag_data("rosbag/test4", "y")
+# plot_rosbag_data("rosbag/test4", "z")
+
+
+
+# plot_rosbag_data("rosbag/test5", "x")
+# plot_rosbag_data("rosbag/test5", "y")
+# plot_rosbag_data("rosbag/test5", "z")
+
+plot_rosbag_data("rosbag/test11", "x")
+plot_rosbag_data("rosbag/test11", "y")
+plot_rosbag_data("rosbag/test11", "z")

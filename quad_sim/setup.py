@@ -15,6 +15,7 @@ setup(
         (os.path.join('lib', package_name, 'dynamics'), glob('dynamics/*')),
         ('share/' + package_name, ['launch/simulation.launch.xml']),
         ('share/' + package_name, ['rviz/first.rviz']),
+        ('share/' + package_name, ['rviz/multiple.rviz']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

@@ -15,6 +15,9 @@ setup(
         (os.path.join('lib', package_name, 'controllers'), glob('controllers/*')),
         ('share/' + package_name, ['launch/verify_sim.launch.xml']),
         ('share/' + package_name, ['launch/launch_sim.launch.xml']),
+        ('share/' + package_name, ['launch/launch_sim_controller.launch.xml']),
+        ('share/' + package_name, ['launch/launch_multiple.launch.xml']),
+        
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,10 +28,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'controller = quad_control.controller_node:main',
+            'controller_pid = quad_control.controller_node:main',
             'joystick = quad_control.joystick:main',
             'record = quad_control.record:main',
             'drone_control = quad_control.drone_control:main',
+            "controller_min = quad_control.controller_min_snap:main",
         ],
     },
 )

@@ -50,7 +50,7 @@ def plot_drone_yaw(bag_file_path):
 
             # Append data to lists
             times.append(time_in_seconds)
-            yaw_values.append(yaw)
+            yaw_values.append(roll)
 
     # Plotting the yaw over time
     plt.figure(figsize=(10, 6))

@@ -1,0 +1,46 @@
+<launch>
+
+        <!-- Arguments for controller node -->
+        <arg name="des_x" default="0.5" description="Desired x position" />
+        <arg name="des_y" default="0.5" description="Desired y position" />
+        <arg name="des_z" default="0.3" description="Desired z position" />
+        <arg name="namespace" default="robot1" description="Namespace for the robot" />
+        
+        <!-- Arguments for simulation launch file -->
+        <arg name="x" default="0.0" description="Desired x position" />
+        <arg name="y" default="0.0" description="Desired y position" />
+        <arg name="z" default="0.0" description="Desired z position" />
+    
+        <!-- Launch simulation node -->
+        <!-- <include file="$(find-pkg-share quad_sim)/simulation.launch.xml">
+            <arg name="x" value="$(arg x)" />
+            <arg name="y" value="$(arg y)" />
+            <arg name="z" value="$(arg z)" />
+            <arg name="namespace" value="$(arg namespace)" />
+        </include> -->
+        <group >
+            <push_ros_namespace namespace="$(var namespace)" />
+            <node pkg="quad_sim" exec="sim" output="screen">
+                <!-- Pass the desired x, y, z, and frame_id as parameters -->
+                <param name="x" value="$(var x)" />
+                <param name="y" value="$(var y)" />
+                <param name="z" value="$(var z)" />
+                <param name="frame_id" value="$(var namespace)" />
+            </node>
+        
+    
+        <!-- Launch controller node in the specified namespace -->
+       
+            <node pkg="quad_control" exec="controller_min" name="controller" output="screen">
+                <!-- Pass the desired x, y, z, and frame_id as parameters -->
+                <param name="desired_x" value="$(var des_x)" />
+                <param name="desired_y" value="$(var des_y)" />
+                <param name="desired_z" value="$(var des_z)" />
+                <param name="frame_id" value="$(var namespace)" />
+                <param name="use_sim" value="true"/>
+            </node>
+        </group>
+
+   </launch>
+
+   <!-- ros2 launch quad_control launch_sim_controller.launch.xml des_x:=1.0 des_z:=1.0 namespace:=sim1 -->

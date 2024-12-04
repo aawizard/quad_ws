@@ -195,8 +195,8 @@ class UdpListener(Node):
             # Broadcast transform
             t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = "world"
-            t.child_frame_id = "metafly_base"
+            t.header.frame_id = "map"
+            t.child_frame_id = "drone"
             t.transform.translation.x = T_world_correctedbird[0,3]
             t.transform.translation.y = T_world_correctedbird[1,3]
             t.transform.translation.z = T_world_correctedbird[2,3]
