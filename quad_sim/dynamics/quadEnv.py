@@ -31,7 +31,7 @@ class quadrotor:
         self.g = 9.81  
         self.m = 0.111
         self.L = 0.06
-        self.torque_scaling_factor = 1.0
+        self.torque_scaling_factor = 0.00001
         # PID gains for roll and pitch
         self.roll_pid = PIDController(kp=0.75, ki=0.04, kd=0.85)
         self.pitch_pid = PIDController(kp=0.75, ki=0.04, kd=0.85)
@@ -127,19 +127,16 @@ class quadrotor:
             p = roll_control_rad
             q = pitch_control_rad
             r += 0  # Assuming no yaw input for now
-            # tau_roll = roll_control * self.torque_scaling_factor
-            # tau_pitch = pitch_control * self.torque_scaling_factor
-            # tau_yaw = 0  # No yaw control for now
-            # torque_body = np.array([tau_roll, tau_pitch, tau_yaw])
-
+          
             # # Current angular velocity vector
-            # omega_body = np.array([p, q, r])
+            omega_body = np.array([p, q, r])
+            tau = np.array([roll_control, pitch_control, 0]) * self.torque_scaling_factor  # Assuming zero yaw control
 
             # # # Compute angular acceleration
-            # # omega_dot = self.I_inv @ (torque_body - np.cross(omega_body, self.I @ omega_body))
+            omega_dot = self.I_inv @ (tau - np.cross(omega_body, self.I @ omega_body))
 
             # # # Update angular velocities
-            # # omega_body += omega_dot * dt
+            omega_body += omega_dot * dt
             # p, q, r = omega_body
 
             if random.uniform(0, 1) < 0.4:

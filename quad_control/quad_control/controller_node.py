@@ -39,8 +39,8 @@ class Controller_pid(Node):
         # Set PID gains based on whether simulation or real drone is used
         if self.use_sim:
             self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.3)
-            self.pid_x = PID_roll_pitch(kp=0.2, ki=0.002, kd=0.001, dt=timer_period)
-            self.pid_y = PID_roll_pitch(kp=0.01, ki=0.002, kd=0.001, dt=timer_period)
+            self.pid_x = PID_roll_pitch(kp=0.3, ki=0.001, kd=0.2, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         else:
             self.pid_altitude = PID_alttitude(kp=1.4, ki=0.2, kd=0.05, dt=timer_period)
             self.pid_x = PID_roll_pitch(kp=0.8, ki=0.01, kd=0.3, dt=timer_period)
@@ -90,8 +90,8 @@ class Controller_pid(Node):
             # Compute errors
             error = self.desired_position - self.curr_position
             thrust = self.pid_altitude.step(error[2], self.curr_position[2])
-            roll = self.pid_x.step(-1 * error[1])
-            pitch = self.pid_y.step(error[0])
+            pitch = self.pid_x.step( error[0])
+            roll = self.pid_y.step(-1* error[1])
             self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
             
             # Update quad command with PID outputs
