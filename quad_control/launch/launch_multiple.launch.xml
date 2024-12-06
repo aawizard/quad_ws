@@ -3,26 +3,27 @@
     <node pkg="rviz2" exec="rviz2" args="$(find-pkg-share quad_sim)/multiple.rviz" name="rviz2" />
 
     <include file="$(find-pkg-share quad_control)/launch_sim_controller.launch.xml">
-        <arg name="des_x" value="1.5" />
-        <arg name="des_y" value="-1.5" />
-        <arg name="des_z" value="2.5" />
+        <arg name="des_x" value="0.0" />
+        <arg name="des_y" value="1.0" />
+        <arg name="des_z" value="1.0" />
         <arg name="namespace" value="sim1" />
     </include>
 
     <!-- <include file="$(find-pkg-share quad_control)/launch_sim_controller.launch.xml">
         <arg name="des_x" value="-2.5" />
-        <arg name="des_y" value="2.5" />
+        <arg name="des_y" value="3.5" />
         <arg name="des_z" value="2.5" />
         <arg name="y" value="1.0"/>
         <arg name="x" value="1.0"/>
         <arg name="namespace" value="sim2" />
-    </include> -->
-<!-- 
+    </include>
+
     <include file="$(find-pkg-share quad_control)/launch_sim_controller.launch.xml">
         <arg name="des_x" value="-1.5" />
         <arg name="des_y" value="-1.5" />
-        <arg name="des_z" value="0.8" />
+        <arg name="des_z" value="1.8" />
         <arg name="x" value="-1.0"/>
+        <arg name="y" value="1.0"/>
         <arg name="namespace" value="sim3" />
     </include> -->
     

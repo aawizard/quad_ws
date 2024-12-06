@@ -54,7 +54,7 @@ def plot_drone_yaw(bag_file_path):
 
     # Plotting the yaw over time
     plt.figure(figsize=(10, 6))
-    plt.plot(times, yaw_values, label='Yaw', color='purple')
+    plt.plot(times, yaw_values, label='roll', color='purple')
     plt.xlabel("Time (s)")
     plt.ylabel("Yaw (degrees)")
     plt.title("Drone Yaw over Time")
@@ -66,4 +66,4 @@ def plot_drone_yaw(bag_file_path):
     rclpy.shutdown()
 
 # Example usage
-plot_drone_yaw("rosbag/test3")
+plot_drone_yaw("rosbag/pos2")

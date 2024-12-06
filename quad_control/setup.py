@@ -32,7 +32,7 @@ setup(
             'joystick = quad_control.joystick:main',
             'record = quad_control.record:main',
             'drone_control = quad_control.drone_control:main',
-            "controller_min = quad_control.controller_min_snap:main",
+            "controller_traj = quad_control.controller_min_snap:main",
         ],
     },
 )

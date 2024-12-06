@@ -16,9 +16,9 @@ class Controller_min(Node):
         # Declare parameters for simulation and desired position
         self.declare_parameter("use_drone", True)
         self.declare_parameter("use_sim", False)
-        self.declare_parameter("desired_x", 0.0)
-        self.declare_parameter("desired_y", 0.0)
-        self.declare_parameter("desired_z", 0.5)
+        self.declare_parameter("desired_x", 0.4)
+        self.declare_parameter("desired_y", 0.4)
+        self.declare_parameter("desired_z", 0.8)
         
         
         # Fetch parameter values
@@ -47,16 +47,24 @@ class Controller_min(Node):
         # Set PID gains based on whether simulation or real drone is used
         if self.use_sim:
             self.controller = TrajectoryController(m=0.11,
-                                                   Kp=np.diag([0.9, 0.9, 10.7]),
-                                                   Kv=np.diag([1.7, 1.7, 3.5]),
-                                                   Kr=2.4,
-                                                   Kw=0.6)
+                                                   Kp=np.diag([1.3, 1.3, 14.5]),
+                                                   Kv=np.diag([1.0, 1.0, 1.7]),
+                                                   Kr=2.9,
+                                                   Kw=0.9)
+            
+            self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.2)
+            self.pid_x = PID_roll_pitch(kp=0.2, ki=0.01, kd=0.4, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.2, ki=0.0, kd=0.4, dt=timer_period)
+        else:
+            self.controller = TrajectoryController(m=0.11,
+                                                   Kp=np.diag([1.3, 1.3, 1.5]),
+                                                   Kv=np.diag([1.0, 1.0, 2.0]),
+                                                   Kr=2.9,
+                                                   Kw=0.9)
             
             self.pid_altitude = PID_alttitude(kp=1.2, ki=0.31, kd=0.4, dt=timer_period)
             self.pid_x = PID_roll_pitch(kp=0.2, ki=0.01, kd=0.4, dt=timer_period)
             self.pid_y = PID_roll_pitch(kp=0.2, ki=0.0, kd=0.4, dt=timer_period)
-        else:
-            pass
         #     self.pid_altitude = PID_alttitude(kp=1.4, ki=0.2, kd=0.05, dt=timer_period)
         #     self.pid_x = PID_roll_pitch(kp=0.8, ki=0.01, kd=0.3, dt=timer_period)
         #     self.pid_y = PID_roll_pitch(kp=0.8, ki=0.0, kd=0.3, dt=timer_period)
@@ -121,6 +129,8 @@ class Controller_min(Node):
         return np.array([roll, pitch, yaw])    
     
     def add_trajectory_point(self, rt):
+        if rt is None or rt[:2] == [0.0, 0.0, 0.0]:
+            pass
         # Create a new pose message
         pose = PoseStamped()
         pose.pose.position.x = rt[0]
@@ -178,16 +188,18 @@ class Controller_min(Node):
         else:
             self.quad_cmd.armed = False
             
-        #     # Compute errors
+            # # Compute errors
             # error = self.desired_position - self.curr_position
-            # thrust = self.pid_altitude.step(error[2])
+            # thrust = self.pid_altitude.step(error[2], self.curr_position[2])
             # roll = self.pid_x.step(-1 * error[1])
             # pitch = self.pid_y.step(error[0])
             # self.get_logger().info("PID control")
             # # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
             # self.quad_cmd.throttle = int(thrust)
-            # self.quad_cmd.roll = int(roll)   
-            # self.quad_cmd.pitch = int(pitch)
+            # self.quad_cmd.roll = 1500
+            # self.quad_cmd.pitch = 1500
+            # # self.quad_cmd.roll = int(roll)   
+            # # self.quad_cmd.pitch = int(pitch)
             # self.quad_cmd.armed = True
             
         # Publish command and increment flag

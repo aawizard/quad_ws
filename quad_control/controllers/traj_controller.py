@@ -104,7 +104,7 @@ class TrajectoryController:
         Args:
             zB (ndarray): z-axis of the body frame.
         """
-        self.u1 = np.dot(self.Fdes, zB) * 0.15
+        self.u1 = np.dot(self.Fdes, zB) * 0.12  ################## Added 0.15 to scale the thrust
 
     def compute_desired_orientation(self):
         """
