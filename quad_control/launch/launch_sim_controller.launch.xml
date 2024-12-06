@@ -31,7 +31,7 @@
     
         <!-- Launch controller node in the specified namespace -->
        
-            <node pkg="quad_control" exec="controller_pid" name="controller" output="screen">
+            <node pkg="quad_control" exec="controller_traj" name="controller" output="screen">
                 <!-- Pass the desired x, y, z, and frame_id as parameters -->
                 <param name="desired_x" value="$(var des_x)" />
                 <param name="desired_y" value="$(var des_y)" />

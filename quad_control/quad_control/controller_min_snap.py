@@ -34,6 +34,7 @@ class Controller_min(Node):
         self.publisher_ = self.create_publisher(QuadCmd, 'quad_ctrl', 10)
         self.traj_path_pub = self.create_publisher(Path, 'traj_path', 10)
         self.actual_path_pub = self.create_publisher(Path, 'actual_path', 10)
+        self.desired_pose_pub = self.create_publisher(PoseStamped, "desired_pose", 10)
         self.traj_path = Path()
         self.actual_path = Path()
         timer_period = 0.01  # seconds
@@ -53,8 +54,8 @@ class Controller_min(Node):
                                                    Kw=0.9)
             
             self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.2)
-            self.pid_x = PID_roll_pitch(kp=0.2, ki=0.01, kd=0.4, dt=timer_period)
-            self.pid_y = PID_roll_pitch(kp=0.2, ki=0.0, kd=0.4, dt=timer_period)
+            self.pid_x = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         else:
             self.controller = TrajectoryController(m=0.11,
                                                    Kp=np.diag([1.3, 1.3, 1.5]),
@@ -83,6 +84,12 @@ class Controller_min(Node):
         
         # Set up timer for callback execution
         self.timer = self.create_timer(timer_period, self.timer_callback)
+        
+        #set desiredpose
+        self.desired_pose = PoseStamped()
+        self.desired_pose.pose.position.x = self.desired_position[0]
+        self.desired_pose.pose.position.y = self.desired_position[1]
+        self.desired_pose.pose.position.z = self.desired_position[2]
         
     
         
@@ -188,18 +195,18 @@ class Controller_min(Node):
         else:
             self.quad_cmd.armed = False
             
-            # # Compute errors
+            # Compute errors
             # error = self.desired_position - self.curr_position
             # thrust = self.pid_altitude.step(error[2], self.curr_position[2])
-            # roll = self.pid_x.step(-1 * error[1])
-            # pitch = self.pid_y.step(error[0])
+            # pitch = self.pid_x.step( error[0])
+            # roll = self.pid_y.step(-1* error[1])
             # self.get_logger().info("PID control")
             # # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
             # self.quad_cmd.throttle = int(thrust)
-            # self.quad_cmd.roll = 1500
-            # self.quad_cmd.pitch = 1500
-            # # self.quad_cmd.roll = int(roll)   
-            # # self.quad_cmd.pitch = int(pitch)
+            # # self.quad_cmd.roll = 1500
+            # # self.quad_cmd.pitch = 1500
+            # self.quad_cmd.roll = int(roll)   
+            # self.quad_cmd.pitch = int(pitch)
             # self.quad_cmd.armed = True
             
         # Publish command and increment flag
@@ -212,9 +219,12 @@ class Controller_min(Node):
         self.actual_path.header.frame_id = "map"
         self.traj_path.header.stamp = self.get_clock().now().to_msg()
         self.traj_path.header.frame_id = "map"
+        self.desired_pose.header.frame_id = "map"
+        self.desired_pose.header.stamp = self.get_clock().now().to_msg()
         
         self.traj_path_pub.publish(self.traj_path)
         self.actual_path_pub.publish(self.actual_path)
+        self.desired_pose_pub.publish(self.desired_pose)
         self.flag += 1
 
 def main(args=None):

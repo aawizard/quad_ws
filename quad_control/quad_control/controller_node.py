@@ -39,7 +39,7 @@ class Controller_pid(Node):
         # Set PID gains based on whether simulation or real drone is used
         if self.use_sim:
             self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.3)
-            self.pid_x = PID_roll_pitch(kp=0.3, ki=0.001, kd=0.2, dt=timer_period)
+            self.pid_x = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
             self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         else:
             self.pid_altitude = PID_alttitude(kp=1.4, ki=0.2, kd=0.05, dt=timer_period)
@@ -64,9 +64,9 @@ class Controller_pid(Node):
         
         #set desiredpose
         self.desired_pose = PoseStamped()
-        # self.desired_pose.pose.position.x = self.desired_position[0]
-        # self.desired_pose.pose.position.y = self.desired_position[1]
-        # self.desired_pose.pose.position.z = self.desired_position[2]
+        self.desired_pose.pose.position.x = self.desired_position[0]
+        self.desired_pose.pose.position.y = self.desired_position[1]
+        self.desired_pose.pose.position.z = self.desired_position[2]
         
     def set_desired_position(self, position):
         self.desired_position = position
@@ -77,9 +77,9 @@ class Controller_pid(Node):
         self.curr_position[0] = msg.pose.position.x
         self.curr_position[1] = msg.pose.position.y
         self.curr_position[2] = msg.pose.position.z
-        self.desired_pose.pose.position.z = msg.pose.position.z
-        self.desired_pose.pose.position.x = msg.pose.position.x
-        self.desired_pose.pose.position.y = msg.pose.position.y
+        # self.desired_pose.pose.position.z = msg.pose.position.z
+        # self.desired_pose.pose.position.x = msg.pose.position.x
+        # self.desired_pose.pose.position.y = msg.pose.position.y
         self.actual_path.poses.append(msg)
 
     def timer_callback(self):
@@ -97,7 +97,7 @@ class Controller_pid(Node):
             # Update quad command with PID outputs
             self.quad_cmd.throttle = thrust
             self.quad_cmd.roll = roll   
-            # self.quad_cmd.pitch = pitch
+            self.quad_cmd.pitch = pitch
             self.quad_cmd.armed = True
         self.actual_path.header.stamp = self.get_clock().now().to_msg()
         self.actual_path.header.frame_id = 'map'
