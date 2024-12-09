@@ -14,9 +14,9 @@ class Controller_pid(Node):
         # Declare parameters for simulation and desired position
         self.declare_parameter("use_drone", True)
         self.declare_parameter("use_sim", False)
-        self.declare_parameter("desired_x", 0.0)
+        self.declare_parameter("desired_x", -0.05)
         self.declare_parameter("desired_y", 0.0)
-        self.declare_parameter("desired_z", 0.2)
+        self.declare_parameter("desired_z", 0.5)
         
         
         # Fetch parameter values
@@ -42,9 +42,9 @@ class Controller_pid(Node):
             self.pid_x = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
             self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         else:
-            self.pid_altitude = PID_alttitude(kp=1.4, ki=0.2, kd=0.05, dt=timer_period)
-            self.pid_x = PID_roll_pitch(kp=0.8, ki=0.01, kd=0.3, dt=timer_period)
-            self.pid_y = PID_roll_pitch(kp=0.8, ki=0.0, kd=0.3, dt=timer_period)
+            self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.1, dt=timer_period, feedforward= 0.45, max_thrust= 0.8)
+            self.pid_x = PID_roll_pitch(kp=0.1,  ki=0.002, kd=0.38, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         
         
         # Initialize quadcopter command message

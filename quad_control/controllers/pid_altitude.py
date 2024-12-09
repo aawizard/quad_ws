@@ -2,11 +2,11 @@ import numpy as np
 
 
 class PID_alttitude:
-    def __init__(self, kp=0.7, ki=0.1, kd=0.1, dt=0.01, feedforward=0.5):
+    def __init__(self, kp=0.7, ki=0.1, kd=0.1, dt=0.01, feedforward=0.5, max_thrust= 0.72):
         self.kp_thrust = kp
         self.ki_thrust = ki
         self.kd_thrust = kd
-        self.max_thrust = 0.720 
+        self.max_thrust = max_thrust 
         self.dt = dt
         self.feedforward = feedforward
         self.prev_error = 1000
@@ -14,11 +14,13 @@ class PID_alttitude:
         self.integral_limit = 1.5
         self.prev_output = 1000
         self.start_pid = False
+        # self.scaling_factor = 0.6 # sim
+        self.scaling_factor = 0.7
 
     def step(self, error, curr):
-        if curr < 0.05:
-            self.prev_output += 10
-            return self.prev_output
+        # if curr < 0.05:
+        #     self.prev_output += 5
+        #     return min( self.prev_output, 1950)
         
         # if abs(error) < 0.05:
         # #     self.integral = 0.0
@@ -31,7 +33,7 @@ class PID_alttitude:
         pid_output = self.kp_thrust * error + self.ki_thrust * self.integral + self.kd_thrust * derivative
         
         # Adding feedforward term 
-        total_output = (pid_output + self.feedforward) * 0.6
+        total_output = (pid_output + self.feedforward) * self.scaling_factor
         
         total_output = min(total_output, self.max_thrust)
         total_output = max(total_output, 0)
@@ -63,10 +65,6 @@ class PID_roll_pitch:
             # self.integral = 0
         error = self.ke * error
         self.integral += error * self.dt * 0.2
-        # if self.integral > self.integral_limit:
-        #     self.integral = self.integral_limit
-        # elif self.integral < -self.integral_limit:
-        #     self.integral = -self.integral_limit
         derivative = (error - self.prev_error) / self.dt
         output = self.kp * error + self.ki * self.integral + self.kd * derivative
         output = max(min(output, self.max_roll_pitch), -self.max_roll_pitch)

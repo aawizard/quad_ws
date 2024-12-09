@@ -5,7 +5,9 @@ from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 import socket
 import struct
+from visualization_msgs.msg import Marker, MarkerArray
 import tf2_ros
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 import tf_transformations  # For quaternion and transformation calculations
 from geometry_msgs.msg import TransformStamped
 import math
@@ -38,7 +40,10 @@ class UdpListener(Node):
 
         # Create a publisher for the PoseStamped messages
         self.pose_publisher = self.create_publisher(PoseStamped, '/quad_pose', 10)
-        
+        marker_qos = QoSProfile(depth=10, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        self.pub_marker = self.create_publisher(
+            MarkerArray, "visualization_marker_array", marker_qos
+        )
         # Create a broadcaster for the TF
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
@@ -47,6 +52,7 @@ class UdpListener(Node):
         self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)  # Reduce buffer size
         self.udp_socket.setblocking(False)
         self.udp_socket.bind(("0.0.0.0", 54321))
+        self.make_drone_makerer()
 
         # Set a timer to check for new messages and broadcast at 100Hz
         self.create_timer(1/100.0, self.timer_callback)
@@ -113,6 +119,64 @@ class UdpListener(Node):
         transform_matrix = np.dot(translation_matrix, rotation_matrix)
 
         return transform_matrix
+    
+    def make_drone_part(self, id, scale, pose, type, color):
+        m = Marker()
+        m.header.frame_id = "drone"
+        m.header.stamp = self.get_clock().now().to_msg()
+        m.id = id
+        m.type = type
+        m.action = Marker.ADD
+        m.scale.x = scale[0]
+        m.scale.y = scale[1]
+        m.scale.z = scale[2]
+        m.pose.position.x = pose[0]
+        m.pose.position.y = pose[1]
+        m.pose.position.z = pose[2]
+        m.pose.orientation.x = pose[3]
+        m.pose.orientation.y = pose[4]
+        m.pose.orientation.z = pose[5]
+        m.pose.orientation.w = pose[6]
+        m.color.r = color[0]
+        m.color.g = color[1]
+        m.color.b = color[2]
+        m.color.a = color[3]
+        m.frame_locked = True
+        return m
+
+    def make_drone_makerer(self):
+        self.drone = MarkerArray()
+        self.drone.markers.append(
+            self.make_drone_part(
+                1, [0.4, 0.02, 0.02], [0.0, 0.0, 0.0, 0.0, 0.0, 0.3826834324, 0.9238795325], Marker.CUBE, [1.0, 1.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                2, [0.4, 0.02, 0.02], [0.0, 0.0, 0.0, 0.0, 0.0, -0.3826834324, 0.9238795325], Marker.CUBE, [1.0, 1.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                3, [0.1, 0.06, 0.02], [0.15, 0.15, 0.0, 0.0, 0.0, 0.0, 1.0], Marker.CYLINDER, [1.0, 0.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                4, [0.1, 0.06, 0.02], [0.15, -0.15, 0.0, 0.0, 0.0, 0.0, 1.0], Marker.CYLINDER, [1.0, 0.0, 0.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                5, [0.1, 0.06, 0.02], [-0.15, 0.15, 0.0, 0.0, 0.0, 0.0, 1.0], Marker.CYLINDER, [0.0, 0.0, 1.0, 1.0]
+            )
+        )
+        self.drone.markers.append(
+            self.make_drone_part(
+                6, [0.1, 0.06, 0.02], [-0.15, -0.15, 0.0, 0.0, 0.0, 0.0, 1.0], Marker.CYLINDER, [0.0, 0.0, 1.0, 1.0]
+            )
+        )
+        self.pub_marker.publish(self.drone)
 
     def timer_callback(self):
         try:
@@ -182,7 +246,7 @@ class UdpListener(Node):
             # Publish the adjusted PoseStamped message
             pose_msg = PoseStamped()
             pose_msg.header.stamp = self.get_clock().now().to_msg()
-            pose_msg.header.frame_id = "world"
+            pose_msg.header.frame_id = "map"
             pose_msg.pose.position.x = T_world_correctedbird[0,3]
             pose_msg.pose.position.y = T_world_correctedbird[1,3]
             pose_msg.pose.position.z = T_world_correctedbird[2,3]

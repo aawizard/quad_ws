@@ -6,8 +6,8 @@ import socket
 import time
 import json 
 
-HOST = '192.168.18.101'  # Server IP (localhost for testing on local machine)
-PORT = 65432  
+HOST = '192.168.18.103'  # Server IP (localhost for testing on local machine)
+PORT = 65434
 
 class SendCommand(Node):
 

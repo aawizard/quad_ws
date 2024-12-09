@@ -6,7 +6,21 @@ from controllers.pid_altitude import PID_alttitude, PID_roll_pitch
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import numpy as np
+from enum import Enum, auto
 
+
+class State(Enum):
+    """
+    Declaring diffrent states the drone can be in.
+
+    Four possible states
+    """    
+    DISARM = auto()
+    INITIAL = auto()
+    START_POINT = auto()
+    MIN_SNAP = auto()
+    STABALIZE = auto()
+    
 
 class Controller_min(Node):
 
@@ -30,6 +44,8 @@ class Controller_min(Node):
             self.get_parameter("desired_z").value
         ])
         self.first_position = False
+        self.state = State.INITIAL
+        self.start_position = np.array([0.0, 0.0, 0.2])
         # Initialize publisher, subscriber, and timers
         self.publisher_ = self.create_publisher(QuadCmd, 'quad_ctrl', 10)
         self.traj_path_pub = self.create_publisher(Path, 'traj_path', 10)
@@ -53,19 +69,19 @@ class Controller_min(Node):
                                                    Kr=2.9,
                                                    Kw=0.9)
             
-            self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.2)
+            self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward= 0.3)
             self.pid_x = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
             self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         else:
             self.controller = TrajectoryController(m=0.11,
-                                                   Kp=np.diag([1.3, 1.3, 1.5]),
-                                                   Kv=np.diag([1.0, 1.0, 2.0]),
+                                                   Kp=np.diag([1.3, 1.3, 11.5]),
+                                                   Kv=np.diag([1.0, 1.0, 1.7]),
                                                    Kr=2.9,
                                                    Kw=0.9)
             
-            self.pid_altitude = PID_alttitude(kp=1.2, ki=0.31, kd=0.4, dt=timer_period)
-            self.pid_x = PID_roll_pitch(kp=0.2, ki=0.01, kd=0.4, dt=timer_period)
-            self.pid_y = PID_roll_pitch(kp=0.2, ki=0.0, kd=0.4, dt=timer_period)
+            self.pid_altitude = PID_alttitude(kp=0.3, ki=0.05, kd=0.09, dt=timer_period, feedforward=0.45)
+            self.pid_x = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
+            self.pid_y = PID_roll_pitch(kp=0.1, ki=0.002, kd=0.38, dt=timer_period)
         #     self.pid_altitude = PID_alttitude(kp=1.4, ki=0.2, kd=0.05, dt=timer_period)
         #     self.pid_x = PID_roll_pitch(kp=0.8, ki=0.01, kd=0.3, dt=timer_period)
         #     self.pid_y = PID_roll_pitch(kp=0.8, ki=0.0, kd=0.3, dt=timer_period)
@@ -175,12 +191,7 @@ class Controller_min(Node):
         elif 500 < self.flag < 700:
             self.quad_cmd.armed = True
         elif self.flag >= 700  and not self.done and self.first_position:
-            # Compute errors
-            # error = self.desired_position - self.curr_position
-            # thrust = self.pid_altitude.step(error[2])
-            # roll = self.pid_x.step(-1 * error[1])
-            # pitch = self.pid_y.step(error[0])
-            # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
+
             self.time = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec / 1e9
             thrust, roll, pitch, yaw, self.done, rt = self.controller.step(self.curr_position, self.curr_euler, self.time)
             self.add_trajectory_point(rt)
@@ -193,21 +204,21 @@ class Controller_min(Node):
             self.quad_cmd.armed = True
             
         else:
-            self.quad_cmd.armed = False
+            # self.quad_cmd.armed = False
             
             # Compute errors
-            # error = self.desired_position - self.curr_position
-            # thrust = self.pid_altitude.step(error[2], self.curr_position[2])
-            # pitch = self.pid_x.step( error[0])
-            # roll = self.pid_y.step(-1* error[1])
-            # self.get_logger().info("PID control")
-            # # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
-            # self.quad_cmd.throttle = int(thrust)
-            # # self.quad_cmd.roll = 1500
-            # # self.quad_cmd.pitch = 1500
-            # self.quad_cmd.roll = int(roll)   
-            # self.quad_cmd.pitch = int(pitch)
-            # self.quad_cmd.armed = True
+            error = self.desired_position - self.curr_position
+            thrust = self.pid_altitude.step(error[2], self.curr_position[2])
+            pitch = self.pid_x.step( error[0])
+            roll = self.pid_y.step(-1* error[1])
+            self.get_logger().info("PID control")
+            # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
+            self.quad_cmd.throttle = int(thrust)
+            # self.quad_cmd.roll = 1500
+            # self.quad_cmd.pitch = 1500
+            self.quad_cmd.roll = int(roll)   
+            self.quad_cmd.pitch = int(pitch)
+            self.quad_cmd.armed = True
             
         # Publish command and increment flag
         self.publisher_.publish(self.quad_cmd)

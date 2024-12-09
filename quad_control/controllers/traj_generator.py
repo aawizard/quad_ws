@@ -119,13 +119,13 @@ class TrajectoryGenerator:
 
 
 
-# # Boundary conditions
-# start = [0, -1, 0, 0, 0, 0]  # Initial conditions
-# end = [3, 2, 5, 0.0, 0.0, 0.0]  # Final conditions
-# T = 2  # Time duration
+# Boundary conditions
+start = [0, -1, 0, 0, 0, 0]  # Initial conditions
+end = [3, 2, 5, 0.0, 0.0, 0.0]  # Final conditions
+T = 2  # Time duration
 
-# # Create the trajectory generator
-# traj_gen = TrajectoryGenerator(start, end, T)
+# Create the trajectory generator
+traj_gen = TrajectoryGenerator(start, end, T)
 
-# # Plot the trajectory and its derivatives
-# traj_gen.plot()
+# Plot the trajectory and its derivatives
+traj_gen.plot()

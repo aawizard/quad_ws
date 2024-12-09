@@ -16,8 +16,8 @@ SLOW_MSGS_LOOP_TIME = 1/5 # these messages take a lot of time slowing down the l
 NO_OF_CYCLES_AVERAGE_GUI_TIME = 10
 
 SERIAL_PORT = "/dev/serial0"
-HOST = '192.168.18.101'  # Server IP
-PORT = 65432
+HOST = '192.168.18.103'  # Server IP
+PORT = 65434
 
 def server_controller():
 
