@@ -120,9 +120,9 @@ class TrajectoryGenerator:
 
 
 # Boundary conditions
-start = [0, -1, 0, 0, 0, 0]  # Initial conditions
-end = [3, 2, 5, 0.0, 0.0, 0.0]  # Final conditions
-T = 2  # Time duration
+start = [0, 0, 0, 0, 0, 0]  # Initial conditions
+end = [-1.5, 1, 1.5, 0.0, 0.0, 0.0]  # Final conditions
+T = 4  # Time duration
 
 # Create the trajectory generator
 traj_gen = TrajectoryGenerator(start, end, T)

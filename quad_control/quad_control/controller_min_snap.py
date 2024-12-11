@@ -45,7 +45,7 @@ class Controller_min(Node):
         ])
         self.first_position = False
         self.state = State.INITIAL
-        self.start_position = np.array([0.0, 0.0, 0.2])
+        self.start_position = np.array([0.0, 0.0, 1.9])
         # Initialize publisher, subscriber, and timers
         self.publisher_ = self.create_publisher(QuadCmd, 'quad_ctrl', 10)
         self.traj_path_pub = self.create_publisher(Path, 'traj_path', 10)
@@ -186,12 +186,38 @@ class Controller_min(Node):
 
     def timer_callback(self):
         # Check if it's time to arm the drone
-        if self.flag < 500:
-            pass
-        elif 500 < self.flag < 700:
+        if self.state == State.DISARM:
+            self.quad_cmd.armed = False
+            self.quad_cmd.throttle = 1000
+            if self.flag > 500:
+                self.state = State.INITIAL
+        elif self.state == State.INITIAL:
             self.quad_cmd.armed = True
-        elif self.flag >= 700  and not self.done and self.first_position:
-
+            if self.flag > 700:
+                self.state = State.MIN_SNAP
+        
+        # elif self.state == State.START_POINT:
+        #     error = self.start_position - self.curr_position
+        #     thrust = self.pid_altitude.step(error[2], self.curr_position[2])
+        #     pitch = self.pid_x.step( error[0])
+        #     roll = self.pid_y.step(-1* error[1])
+        #     self.get_logger().info("PID control")
+        #     # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
+        #     self.quad_cmd.throttle = int(thrust)
+        #     # self.quad_cmd.roll = 1500
+        #     # self.quad_cmd.pitch = 1500
+        #     self.quad_cmd.roll = int(roll)   
+        #     self.quad_cmd.pitch = int(pitch)
+        #     self.quad_cmd.armed = True
+            
+        #     if abs(np.linalg.norm(error)) < 0.1:
+        #         self.state = State.MIN_SNAP
+        #         self.flag = 0
+        #         self.controller.set_trajectory(start=np.concatenate([self.curr_position, np.array([0.0, 0.0, 0.0])]),
+        #                                     end=np.concatenate([self.desired_position, np.array([0.0, 0.0, 0.0])]),
+        #                                     duration=self.traj_controller_duration)
+            
+        elif self.state == State.MIN_SNAP:
             self.time = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec / 1e9
             thrust, roll, pitch, yaw, self.done, rt = self.controller.step(self.curr_position, self.curr_euler, self.time)
             self.add_trajectory_point(rt)
@@ -202,30 +228,30 @@ class Controller_min(Node):
             self.quad_cmd.roll = int(roll)   
             self.quad_cmd.pitch = int(pitch)
             self.quad_cmd.armed = True
-            
-        else:
-            # self.quad_cmd.armed = False
+            error = self.desired_position - self.curr_position
+            if abs(np.linalg.norm(error)) < 0.1:
+                self.state = State.STABALIZE
+                
+        elif self.state == State.STABALIZE:
+            self.quad_cmd.armed = False
             
             # Compute errors
-            error = self.desired_position - self.curr_position
-            thrust = self.pid_altitude.step(error[2], self.curr_position[2])
-            pitch = self.pid_x.step( error[0])
-            roll = self.pid_y.step(-1* error[1])
-            self.get_logger().info("PID control")
-            # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
-            self.quad_cmd.throttle = int(thrust)
-            # self.quad_cmd.roll = 1500
-            # self.quad_cmd.pitch = 1500
-            self.quad_cmd.roll = int(roll)   
-            self.quad_cmd.pitch = int(pitch)
-            self.quad_cmd.armed = True
+            # error = self.desired_position - self.curr_position
+            # thrust = self.pid_altitude.step(error[2], self.curr_position[2])
+            # pitch = self.pid_x.step( error[0])
+            # roll = self.pid_y.step(-1* error[1])
+            # self.get_logger().info("PID control")
+            # # self.get_logger().info(f"error z: {error[2]}, error y: {error[1]}, error x: {error[0]}")
+            # self.quad_cmd.throttle = int(thrust)
+            # # self.quad_cmd.roll = 1500
+            # # self.quad_cmd.pitch = 1500
+            # self.quad_cmd.roll = int(roll)   
+            # self.quad_cmd.pitch = int(pitch)
+            # self.quad_cmd.armed = True
+            
             
         # Publish command and increment flag
         self.publisher_.publish(self.quad_cmd)
-        error = self.desired_position - self.curr_position
-        if abs(np.linalg.norm(error)) < 0.1:
-            self.done = True
-            self.get_logger().info("Done")
         self.actual_path.header.stamp = self.get_clock().now().to_msg()
         self.actual_path.header.frame_id = "map"
         self.traj_path.header.stamp = self.get_clock().now().to_msg()

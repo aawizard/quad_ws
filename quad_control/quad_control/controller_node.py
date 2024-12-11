@@ -14,7 +14,7 @@ class Controller_pid(Node):
         # Declare parameters for simulation and desired position
         self.declare_parameter("use_drone", True)
         self.declare_parameter("use_sim", False)
-        self.declare_parameter("desired_x", -0.05)
+        self.declare_parameter("desired_x", 0.0)
         self.declare_parameter("desired_y", 0.0)
         self.declare_parameter("desired_z", 0.5)
         
